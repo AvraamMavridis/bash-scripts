@@ -8,6 +8,10 @@
 REPO_URL=$(git config --get remote.origin.url)
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
+echo REPO : $REPO_URL
+echo BRANCH : $CURRENT_BRANCH
+
+
 # Checks it this is a git repo
 if [[ ! -n $REPO_URL ]]
 then
@@ -15,9 +19,18 @@ then
   exit 1
 fi
 
+# Reset local changes
 reset=$(git reset --hard origin/$CURRENT_BRANCH)
 echo RESET : $reset
+
+# Pull updates
 pull=$(git pull)
 echo PULL : $pull
+
+# Install packages
 install=$(npm i)
-echo NPM : $install
+echo NPM INSTALL
+
+# Update all the packages listed to the latest version, respecting semver.
+update=$(npm update --save)
+echo NPM UPDATE
