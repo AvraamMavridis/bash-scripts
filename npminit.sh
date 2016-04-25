@@ -32,5 +32,5 @@ install=$(npm i)
 echo NPM INSTALL
 
 # Update all the packages listed to the latest version, respecting semver.
-update=$(npm update --save)
+update=$(npm update)
 echo NPM UPDATE
