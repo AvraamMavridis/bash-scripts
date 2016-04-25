@@ -3,16 +3,22 @@
 #: Date: 25/04/2016
 #: Author: Avraam Mavridis avr.mav@gmail.com
 #: Version: 0.1.0
-#: Description : sends a pull request with updated depedencies
+#: Description : Update depedencies to its latest version and create a branch with
+# updated package.json from which you can create a pull request to master
+# requires npm version >= 3.8.7
 
+REPO_URL=$(git config --get remote.origin.url)
+
+git checkout master
+git pull
 brew install md5sha1sum
 
 tput setab 3; tput setaf 4;
 echo " UPDATE DEPEDENCIES "
 tput sgr0
 
-md5=`md5sum package.json | awk '{ print $1 }'`
-echo $md5
+# Hash of the package.json
+oldMD5=`md5sum package.json | awk '{ print $1 }'`
 
 function updateDepedencies {
   depedencies=$(npm list -parseable -depth 0 -$1)
@@ -25,13 +31,23 @@ function updateDepedencies {
       tput setab 4; tput setaf 3;
       echo ${deps[$dep]##*/}
       tput sgr0
-      npm i ${deps[$dep]##*/} --save
+      npm update ${deps[$dep]##*/} --$2
     fi
   done
 }
 
-updateDepedencies prod
-updateDepedencies dev
+# Update depedencies and save the changes to package.json
+updateDepedencies prod --save
+# Update devDepedencies and save the changes to package.json
+updateDepedencies dev --save-dev
 
-md5=`md5sum package.json | awk '{ print $1 }'`
-echo $md5
+# Hash of the package.json with the changes
+newMD5=`md5sum package.json | awk '{ print $1 }'`
+
+if [ "$oldMD5" != "$newMD5" ]
+then
+    git add package.json
+    git commit -m "Update depedencies"
+    git checkout -b $newMD5
+    git push origin $newMD5:$newMD5
+fi
